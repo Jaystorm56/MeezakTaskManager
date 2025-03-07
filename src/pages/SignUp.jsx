@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
-import { addDoc, collection } from 'firebase/firestore';
+import { setDoc, doc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 
 function SignUp() {
@@ -17,7 +17,7 @@ function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      await addDoc(collection(db, 'users'), {
+      await setDoc(doc(db, 'users', newUser.uid), {
         uid: newUser.uid,
         email: newUser.email,
         firstName: firstName,

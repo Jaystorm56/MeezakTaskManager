@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../../firebaseConfig';
-import { collection, addDoc, onSnapshot, query, where, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, where, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -9,6 +9,7 @@ import Header from '../components/Header';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState({ firstName: '', lastName: '' });
   const [title, setTitle] = useState('');
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -19,9 +20,16 @@ function Dashboard() {
     let unsubscribeTasks = null;
     let unsubscribeSubtasks = null;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        // Fetch user data from Firestore
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        }
+
         // Fetch tasks
         const tasksRef = collection(db, 'tasks');
         const userTasksQuery = query(tasksRef, where('userId', '==', currentUser.uid));
@@ -132,7 +140,7 @@ function Dashboard() {
     <div style={{ display: 'flex' }}>
       <Sidebar />
       <div style={{ marginLeft: '250px', width: '100%' }}>
-        <Header userEmail={user.email} />
+      <Header firstName={userData.firstName} lastName={userData.lastName} />
         <div style={{ padding: '80px 20px 20px' }}>
           <form onSubmit={addTask} style={{ margin: '20px 0' }}>
             <input
