@@ -1,4 +1,6 @@
-import searchIcon from '../assets/icons/search-normal.png'; // Adjust path/filename as needed
+import searchIcon from '../assets/icons/search-normal.png'; 
+import plusIcon from '../assets/icons/Vector.png';
+import headerGif from '../assets/icons/burning.gif';
 
 function Header({ firstName, lastName, activeView, onAddTask }) {
   // Get initials from first and last name
@@ -9,12 +11,12 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
   return (
     <div style={{
       width: 'calc(100% - 250px)',
-      height: activeView === 'tasks' ? '150px' : '80px', // Increase height for Tasks view
+      height: activeView === 'tasks' ? '140px' : '90px', 
       backgroundColor: '#fff',
       color: '#141522',
       padding: '0 20px',
       display: 'flex',
-      flexDirection: 'column', // Stack content vertically
+      flexDirection: 'column', 
       justifyContent: 'center',
       boxShadow: '0 2px 1.5px rgba(0,0,0,0.2)',
       position: 'fixed',
@@ -28,11 +30,29 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '80px', // Fixed height for top section
+        height: '80px', 
       }}>
-        <h1 style={{ margin: 0, fontSize: '24px' }}>
-          {activeView === 'overview' ? 'Dashboard' : 'Explore Tasks'}
-        </h1>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '2px', 
+        }}>
+          <img 
+            src={headerGif} 
+            alt="Header GIF" 
+            style={{ 
+              width: '24px', 
+              height: '24px',
+            }} 
+          />
+          <h1 style={{ 
+            margin: 0, 
+            fontSize: '24px', 
+            fontWeight: 'bold' 
+          }}>
+            {activeView === 'overview' ? 'Dashboard' : 'Explore Tasks'}
+          </h1>
+        </div>
         {firstName && (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ marginRight: '8px', textAlign: 'right' }}>
@@ -67,8 +87,8 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: '40px', // Fixed height for bottom section
-          marginTop: '5px', // Small gap between top and bottom
+          height: '40px', 
+          marginTop: '5px', 
         }}>
           {/* Search Box */}
           <div style={{ 
@@ -81,7 +101,7 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
               alt="Search" 
               style={{ 
                 position: 'absolute', 
-                left: '10px', 
+                right: '19px', 
                 top: '50%', 
                 transform: 'translateY(-50%)', 
                 width: '20px', 
@@ -93,7 +113,7 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
               placeholder="Search tasks..." 
               style={{ 
                 width: '100%', 
-                padding: '8px 8px 8px 40px', // Space for icon
+                padding: '8px 8px 8px 20px', 
                 border: '1px solid #ddd', 
                 borderRadius: '5px', 
                 fontSize: '14px' 
@@ -104,17 +124,27 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
           <button 
             onClick={onAddTask}
             style={{
-              padding: '8px 16px',
+              padding: '10px 15px',
               backgroundColor: '#141522',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
               cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              marginLeft: '20px', // Space from search box
+              fontSize: '12px',
+              marginLeft: '20px',
+              display: 'flex', 
+              alignItems: 'center',
+              gap: '8px', 
             }}
           >
+            <img 
+              src={plusIcon} 
+              alt="Add" 
+              style={{ 
+                width: '10px', 
+                height: '10px' 
+              }} 
+            />
             Add Task
           </button>
         </div>

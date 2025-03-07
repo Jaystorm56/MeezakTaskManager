@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
-import companyLogo from '../assets/images/company-logo.png'; // Adjust path/filename
-import overviewIcon from '../assets/icons/category-2.png'; // Adjust path/filename
-import tasksIcon from '../assets/icons/book.png'; // Adjust path/filename
+import companyLogo from '../assets/images/company-logo.png';
+import overviewIcon from '../assets/icons/category-2.png'; 
+import tasksIcon from '../assets/icons/book.png'; 
+import exitIcon from '../assets/icons/exit-icon.png';
 
 function Sidebar({ activeView, setActiveView }) {
   const navigate = useNavigate();
@@ -35,11 +36,11 @@ function Sidebar({ activeView, setActiveView }) {
         src={companyLogo} 
         alt="Company Logo" 
         style={{ 
-          width: '150px', // Adjust size as needed
+          width: '120px', 
           height: 'auto',
-          marginBottom: '20px',
-          alignSelf: 'center', // Center horizontally
-          paddingTop: '20px', // Align vertically with header text
+          marginBottom: '40px',
+          alignSelf: 'center',
+          paddingTop: '10px', 
         }} 
       />
       
@@ -62,7 +63,13 @@ function Sidebar({ activeView, setActiveView }) {
             alt="Overview Icon" 
             style={{ width: '20px', height: '20px', marginRight: '10px' }} 
           />
-          <span style={{ color: '#333', textDecoration: 'none' }}>Overview</span>
+          <span style={{ 
+            color: '#333', 
+            textDecoration: 'none',
+            fontSize: activeView === 'overview' ? '18px' : '14px', 
+          }}>
+            Overview
+          </span>
         </li>
         <li 
           style={{ 
@@ -81,7 +88,13 @@ function Sidebar({ activeView, setActiveView }) {
             alt="Tasks Icon" 
             style={{ width: '20px', height: '20px', marginRight: '10px' }} 
           />
-          <span style={{ color: '#333', textDecoration: 'none' }}>Tasks</span>
+          <span style={{ 
+            color: '#333', 
+            textDecoration: 'none',
+            fontSize: activeView === 'tasks' ? '18px' : '14px', 
+          }}>
+            Tasks
+          </span>
         </li>
       </ul>
 
@@ -90,15 +103,30 @@ function Sidebar({ activeView, setActiveView }) {
         onClick={handleLogout}
         style={{
           width: 'calc(100% - 40px)',
-          padding: '10px',
-          backgroundColor: '#ff4444',
-          color: 'white',
+          padding: '10px 15px', 
+          backgroundColor: 'rgba(255, 68, 81, 0.2)',
+          color: '#FF4451',
           border: 'none',
           cursor: 'pointer',
-          alignSelf: 'center', // Center horizontally
+          alignSelf: 'center',
           marginBottom: '20px',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center', 
+          gap: '8px', 
         }}
       >
+        <img 
+          src={exitIcon} 
+          alt="Exit" 
+          style={{ 
+            width: '16px', 
+            height: '16px' 
+          }} 
+        />
         Logout
       </button>
     </div>
