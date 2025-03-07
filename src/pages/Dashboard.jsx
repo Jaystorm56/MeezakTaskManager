@@ -139,7 +139,7 @@ function Dashboard() {
   return (
     <div style={{ display: 'flex' }}>
       <Sidebar />
-      <div style={{ marginLeft: '250px', width: '100%' }}>
+      <div style={{ marginLeft: '250px', width: 'calc(100% - 250px)' }}>
       <Header firstName={userData.firstName} lastName={userData.lastName} />
         <div style={{ padding: '80px 20px 20px' }}>
           <form onSubmit={addTask} style={{ margin: '20px 0' }}>

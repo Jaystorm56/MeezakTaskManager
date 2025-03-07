@@ -2,11 +2,15 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Outfit", "sans-serif"], // Setting Outfit as the default sans-serif font
+        inter: ["Inter", "sans-serif"], // Example: Adding another font for specific use
+      },
+    },
   },
   plugins: [],
-}
-
+};

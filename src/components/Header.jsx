@@ -6,7 +6,7 @@ function Header({ firstName, lastName }) {
   
     return (
       <div style={{
-        width: '100%',
+        width: 'calc(100% - 250px)',
         height: '80px', // Increased height to accommodate text and circle
         backgroundColor: '#fff',
         color: 'black',
@@ -17,7 +17,7 @@ function Header({ firstName, lastName }) {
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
         position: 'fixed',
         top: 0,
-        left: 0,
+        left: '250px',
         zIndex: 10,
       }}>
         <h1 style={{ margin: 0, fontSize: '24px' }}>Task Manager</h1>
