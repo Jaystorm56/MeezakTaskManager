@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../../firebaseConfig';
 import { collection, addDoc, onSnapshot, query, where, updateDoc, doc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -52,15 +55,6 @@ function Dashboard() {
       if (unsubscribeSubtasks) unsubscribeSubtasks();
     };
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/signin');
-    } catch (error) {
-      console.error('Logout error:', error.message);
-    }
-  };
 
   const addTask = async (e) => {
     e.preventDefault();
@@ -135,12 +129,11 @@ function Dashboard() {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Task Manager</h1>
-      <>
-          <p>Welcome, {user.email}!</p>
-          <button onClick={handleLogout}>Logout</button>
-
+    <div style={{ display: 'flex' }}>
+      <Sidebar />
+      <div style={{ marginLeft: '250px', width: '100%' }}>
+        <Header userEmail={user.email} />
+        <div style={{ padding: '80px 20px 20px' }}>
           <form onSubmit={addTask} style={{ margin: '20px 0' }}>
             <input
               type="text"
@@ -276,9 +269,13 @@ function Dashboard() {
               ))}
             </ul>
           </div>
-        </>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default Dashboard;
+
+
+
