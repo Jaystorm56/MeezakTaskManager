@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../../firebaseConfig';
@@ -263,6 +262,9 @@ function Dashboard() {
         if (taskSubtasks.every((s) => s.completed)) {
           await updateTaskStatus(task.id, 'completed');
         }
+      } else if (task.status === 'completed' && !taskSubtasks.every((s) => s.completed)) {
+        // Move back to In Progress if any subtask is unchecked in Completed
+        await updateTaskStatus(task.id, 'inprogress');
       }
     } catch (error) {
       console.error('Error toggling subtask:', error.message);
@@ -458,26 +460,47 @@ function Dashboard() {
               <div
                 key={task.id}
                 ref={(el) => (taskCardRefs.current[index] = el)}
-                className="bg-gray-100 p-4 rounded-lg shadow-sm mb-4 relative"
+                className="bg-gray-100 p-6 rounded-lg shadow-sm mb-4 min-h-[250px]"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900">{task.title}</h3>
-                    <p className="text-xs text-gray-500">{task.dueDate}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-gray-500">
-                      {getCompletionPercentage(task.id)}%
+                <div className="flex flex-col space-y-2 mb-6">
+                  <h3 className="text-4xl font-bold text-gray-900">{task.title}</h3>
+                  <p className="text-sm text-gray-500">{task.dueDate}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-4xl font-bold text-gray-900">
+                      {getCompletionPercentage(task.id).toFixed(2)}%
                     </span>
-                    <button
-                      onClick={() => handleEditTask(task)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="5" strokeWidth="2" />
+                      </svg>
+                      <select
+                        value={task.status}
+                        onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+                        className="appearance-none bg-transparent border-none text-gray-500 text-sm focus:outline-none cursor-pointer"
+                      >
+                        <option value="todo">Not Started</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="completed" disabled={subtasks.filter((s) => s.taskId === task.id).some((s) => !s.completed)}>
+                          Done
+                        </option>
+                      </select>
+                      {/* <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const select = e.currentTarget.previousSibling;
+                          select.focus();
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div> */}
+                    </div>
                   </div>
                 </div>
-                <ul className="space-y-2 mb-2">
+                <ul className="space-y-2">
                   {subtasks
                     .filter((subtask) => subtask.taskId === task.id)
                     .map((subtask) => (
@@ -498,17 +521,12 @@ function Dashboard() {
                       </li>
                     ))}
                 </ul>
-                <select
-                  value={task.status}
-                  onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                  className="w-full py-1 px-2 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button
+                  onClick={() => handleEditTask(task)}
+                  className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
                 >
-                  <option value="todo">Not Started</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="completed" disabled={subtasks.filter((s) => s.taskId === task.id).some((s) => !s.completed)}>
-                    Done
-                  </option>
-                </select>
+                  <PencilIcon className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -523,26 +541,47 @@ function Dashboard() {
               <div
                 key={task.id}
                 ref={(el) => (taskCardRefs.current[index + todoTasks.length] = el)}
-                className="bg-blue-100 p-4 rounded-lg shadow-sm mb-4 relative"
+                className="bg-blue-100 p-6 rounded-lg shadow-sm mb-4 min-h-[250px]"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900">{task.title}</h3>
-                    <p className="text-xs text-gray-500">{task.dueDate}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-gray-500">
-                      {getCompletionPercentage(task.id)}%
+                <div className="flex flex-col space-y-2 mb-6">
+                  <h3 className="text-4xl font-bold text-gray-900">{task.title}</h3>
+                  <p className="text-sm text-gray-500">{task.dueDate}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-4xl font-bold text-gray-900">
+                      {getCompletionPercentage(task.id).toFixed(2)}%
                     </span>
-                    <button
-                      onClick={() => handleEditTask(task)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="5" strokeWidth="2" />
+                      </svg>
+                      <select
+                        value={task.status}
+                        onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+                        className="appearance-none bg-transparent border-none text-gray-500 text-sm focus:outline-none cursor-pointer"
+                      >
+                        <option value="todo">Not Started</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="completed" disabled={subtasks.filter((s) => s.taskId === task.id).some((s) => !s.completed)}>
+                          Done
+                        </option>
+                      </select>
+                      {/* <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const select = e.currentTarget.previousSibling;
+                          select.focus();
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div> */}
+                    </div>
                   </div>
                 </div>
-                <ul className="space-y-2 mb-2">
+                <ul className="space-y-2">
                   {subtasks
                     .filter((subtask) => subtask.taskId === task.id)
                     .map((subtask) => (
@@ -563,17 +602,12 @@ function Dashboard() {
                       </li>
                     ))}
                 </ul>
-                <select
-                  value={task.status}
-                  onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                  className="w-full py-1 px-2 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button
+                  onClick={() => handleEditTask(task)}
+                  className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
                 >
-                  <option value="todo">Not Started</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="completed" disabled={subtasks.filter((s) => s.taskId === task.id).some((s) => !s.completed)}>
-                    Done
-                  </option>
-                </select>
+                  <PencilIcon className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -584,61 +618,84 @@ function Dashboard() {
               <span className="w-4 h-4 bg-green-400 rounded-full mr-2"></span>
               Done
             </h2>
-            {completedTasks.map((task, index) => (
-              <div
-                key={task.id}
-                ref={(el) => (taskCardRefs.current[index + todoTasks.length + inProgressTasks.length] = el)}
-                className="bg-green-50 p-4 rounded-lg shadow-sm mb-4 relative"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900">{task.title}</h3>
-                    <p className="text-xs text-gray-500">{task.dueDate}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-gray-500">
-                      {getCompletionPercentage(task.id)}%
-                    </span>
-                    <button
-                      onClick={() => handleEditTask(task)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <ul className="space-y-2 mb-2">
-                  {subtasks
-                    .filter((subtask) => subtask.taskId === task.id)
-                    .map((subtask) => (
-                      <li key={subtask.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={subtask.completed}
-                          onChange={() => toggleSubtaskCompletion(subtask.id, subtask.completed)}
-                          className="mr-2 h-4 w-4 text-blue-500 border-gray-300 rounded-sm focus:ring-blue-500"
-                        />
-                        <span
-                          className={`text-sm ${
-                            subtask.completed ? 'line-through text-gray-500' : 'text-gray-700'
-                          }`}
-                        >
-                          {subtask.title}
-                        </span>
-                      </li>
-                    ))}
-                </ul>
-                <select
-                  value={task.status}
-                  onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                  className="w-full py-1 px-2 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            {completedTasks.map((task, index) => {
+              const taskSubtasks = subtasks.filter((s) => s.taskId === task.id);
+              if (taskSubtasks.some((s) => !s.completed)) {
+                updateTaskStatus(task.id, 'inprogress'); // Move to In Progress if subtasks are not all checked
+                return null; // Skip rendering until the status updates
+              }
+              return (
+                <div
+                  key={task.id}
+                  ref={(el) => (taskCardRefs.current[index + todoTasks.length + inProgressTasks.length] = el)}
+                  className="bg-green-50 p-6 rounded-lg shadow-sm mb-4 min-h-[250px]"
                 >
-                  <option value="todo">Not Started</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="completed">Done</option>
-                </select>
-              </div>
-            ))}
+                  <div className="flex flex-col space-y-2 mb-6">
+                    <h3 className="text-4xl font-bold text-gray-900">{task.title}</h3>
+                    <p className="text-sm text-gray-500">{task.dueDate}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-4xl font-bold text-gray-900">
+                        {getCompletionPercentage(task.id).toFixed(2)}%
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="5" strokeWidth="2" />
+                        </svg>
+                        <select
+                          value={task.status}
+                          onChange={(e) => updateTaskStatus(task.id, e.target.value)}
+                          className="appearance-none bg-transparent border-none text-gray-500 text-sm focus:outline-none cursor-pointer"
+                        >
+                          <option value="todo">Not Started</option>
+                          <option value="inprogress">In Progress</option>
+                          <option value="completed">Done</option>
+                        </select>
+                        {/* <div
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const select = e.currentTarget.previousSibling;
+                            select.focus();
+                          }}
+                        >
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div> */}
+                      </div>
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    {subtasks
+                      .filter((subtask) => subtask.taskId === task.id)
+                      .map((subtask) => (
+                        <li key={subtask.id} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={subtask.completed}
+                            onChange={() => toggleSubtaskCompletion(subtask.id, subtask.completed)}
+                            className="mr-2 h-4 w-4 text-blue-500 border-gray-300 rounded-sm focus:ring-blue-500"
+                          />
+                          <span
+                            className={`text-sm ${
+                              subtask.completed ? 'line-through text-gray-500' : 'text-gray-700'
+                            }`}
+                          >
+                            {subtask.title}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                  <button
+                    onClick={() => handleEditTask(task)}
+                    className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
