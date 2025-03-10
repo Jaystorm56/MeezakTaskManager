@@ -18,7 +18,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<SignIn />} />
+        <Route path="/" element={<SignUp />} />
       </Routes>
     </Router>
   );
