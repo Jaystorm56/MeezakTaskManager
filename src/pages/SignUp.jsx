@@ -103,7 +103,7 @@ function SignUp() {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Last Name"
                 required
-                 className='hover:border-none hover:outline-none focus:border-none focus:outline-none w-[410px] h-[40px] text-[#33333380] bg-transparent font-[Outfit] font-normal text-[14px] leading-[24px] tracking-[-0.1px] align-middle'
+                className='hover:border-none hover:outline-none focus:border-none focus:outline-none w-[410px] h-[40px] text-[#33333380] bg-transparent font-[Outfit] font-normal text-[14px] leading-[24px] tracking-[-0.1px] align-middle'
               />
             </div>
 
@@ -130,14 +130,15 @@ function SignUp() {
                 className='hover:border-none hover:outline-none focus:border-none focus:outline-none w-[378px] h-[40px] text-[#33333380] bg-transparent font-[Outfit] font-normal text-[14px] leading-[24px] tracking-[-0.1px] align-middle'
               />
 
-              <button type="button" onClick={handleSeePwd} aria-label="Toggle Password Visibility"          className='border-none 'lassName>
-                <img src={seePassword === "password" ? showPwd : hidePwd} alt="" className="w-[20px] h-[20px]" />
+              <button type="button" onClick={handleSeePwd} aria-label="Toggle Password Visibility" className='border-none'>
+                <img src={seePassword === "password" ? showPwd : hidePwd} alt="toggle-icon" className="w-[20px] h-[20px]" />
               </button>
             
             </div>
             
-            <div className='w-full h-[56px] rounded-[10px] gap-[12px] bg-[#F8F8F8] flex justify-between items-center mt-[32px] mb-[20px]'>
-              <button type="submit" className={`w-full h-[56px] rounded-[10px] text-[#ffffff] ${isFormFilled ?  'bg-[#071856]' : 'bg-[#666666]'} `} disabled = {isSubmitting}>
+            <div className={`w-full h-[56px] rounded-[10px] gap-[12px] bg-[#F8F8F8] flex justify-between items-center mt-[32px] mb-[20px]`}>
+              
+              <button type="submit" className={`w-full h-[56px] rounded-[10px] text-[#ffffff] ${isFormFilled ?  'bg-[#071856]' : 'bg-[#666666]'} `} disabled = {isSubmitting} >
                 {isSubmitting ? (
                   <img src={loader} alt="Loading..." className="block h-[50px] w-[50px] m-auto" />
                   ) : (

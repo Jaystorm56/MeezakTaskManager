@@ -89,7 +89,7 @@ function SignIn() {
                 required
                 className='hover:border-none hover:outline-none focus:border-none focus:outline-none w-[378px] h-[40px] text-[#33333380] bg-transparent font-[Outfit] font-normal text-[14px] leading-[24px] tracking-[-0.1px] align-middle'
               />
-              <button type="button" onClick={handleSeePwd} aria-label="Toggle Password Visibility" className='border-none 'lassName>
+              <button type="button" onClick={handleSeePwd} aria-label="Toggle Password Visibility" className='border-none'>
                 <img src={seePassword === "password" ? showPwd : hidePwd} alt="" className="w-[20px] h-[20px]" />
               </button>
              
