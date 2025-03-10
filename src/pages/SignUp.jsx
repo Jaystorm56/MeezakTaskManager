@@ -6,14 +6,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import companyLogo from '../assets/images/company-logo.png';
 import loader from '../assets/icons/loader.svg'
 import personIcon from '../assets/icons/person-rounded.png';
+import activePersonIcon from '../assets/icons/activeperson-rounded.png';
 import emailIcon from '../assets/icons/dashicons_email.png';
+import activeEmailIcon from '../assets/icons/activeemail.png';
 import pwdIcon from '../assets/icons/mdi_password.png';
 import showPwd from '../assets/icons/seepwd.png';
-import activePersonIcon from '../assets/icons/activeperson-rounded.png';
-import activeEmailIcon from '../assets/icons/activeemail.png';
+import hidePwd from '../assets/icons/hidepwd.png';
 import activePwdIcon from '../assets/icons/activepwd.png';
 
 function SignUp() {
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,12 +23,22 @@ function SignUp() {
   const navigate = useNavigate();
 
 
-  // Check if all fields are filled
   const isFormFilled = firstName && lastName && email && password;
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+  const [seePassword, setSeePassword] = useState("password");
+  const handleSeePwd = () => {
+    setSeePassword((prev) => (prev === "password" ? "text" : "password"));
+  }
+
+
+ 
   const handleSignup = async (e) => {
+
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
@@ -43,14 +55,18 @@ function SignUp() {
     } catch (error) {
       console.error('Signup error:', error.message);
       alert(error.message);
+    }
+    finally {
+      setIsSubmitting(false);
     };
-    setIsSubmitting(false);
+
   };
 
 
 
   return (
-    <div className='relative' style={{border:"solid red 1px" }}>
+    <div className='relative'>
+
         <div className='w-[1318px] h-[75px] border-b-[0.5px] border-b-[#66666666] flex justify-between py-[10px] absolute top-[16px] left-[60px]'>
 
           <img src={companyLogo} alt="Meezak-Company-Logo" className="block w-[120px] h-[43px]" />
@@ -106,20 +122,24 @@ function SignUp() {
             <div className={` w-full h-[56px] rounded-[10px] border gap-[12px]  px-[20px] flex justify-between items-center my-[14px] ${isFormFilled ? 'border-[#071856] bg-[#0718561A]' : ' border-[#DAE0E6] bg-[#F8F8F8]'} `}>
               <img src={isFormFilled ? activePwdIcon :pwdIcon} alt="face-icon" className="w-[20px] h-[20px] top-[3px] left-[3px]" />
               <input
-                type="password"
+                type={seePassword}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 required
                 className='hover:border-none hover:outline-none focus:border-none focus:outline-none w-[378px] h-[40px] text-[#33333380] bg-transparent font-[Outfit] font-normal text-[14px] leading-[24px] tracking-[-0.1px] align-middle'
               />
-              <img src={showPwd} alt="face-icon" className="w-[20px] h-[20px]" />
+
+              <button type="button" onClick={handleSeePwd} aria-label="Toggle Password Visibility"          className='border-none 'lassName>
+                <img src={seePassword === "password" ? showPwd : hidePwd} alt="" className="w-[20px] h-[20px]" />
+              </button>
+            
             </div>
             
             <div className='w-full h-[56px] rounded-[10px] gap-[12px] bg-[#F8F8F8] flex justify-between items-center mt-[32px] mb-[20px]'>
               <button type="submit" className={`w-full h-[56px] rounded-[10px] text-[#ffffff] ${isFormFilled ?  'bg-[#071856]' : 'bg-[#666666]'} `} disabled = {isSubmitting}>
                 {isSubmitting ? (
-                  <img src={loader} alt="Loading..." className="h-[20px] w-[20px]" />
+                  <img src={loader} alt="Loading..." className="block h-[50px] w-[50px] m-auto" />
                   ) : (
                 "Sign Up")}
               </button>
@@ -127,7 +147,7 @@ function SignUp() {
 
           </form>
           
-            <Link to="/signin" className="block w-fit h-[18px] mx-auto font-normal text-[14px] leading-[100%] tracking-[0%]">
+            <Link to="/signin" className="block w-fit h-[18px] mx-auto font-normal text-[14px] leading-[100%] tracking-[0%] text-[#333333]">
               Already have an account? <span className='font-bold'>Login</span> 
             </Link>
         
