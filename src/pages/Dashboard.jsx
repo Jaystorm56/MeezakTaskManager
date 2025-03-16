@@ -11,9 +11,10 @@ import { PencilIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState({ firstName: '', lastName: '' });
+  const [userData, setUserData] = useState({ firstName: '', lastName: '', role: 'employee' });
   const [tasks, setTasks] = useState([]);
   const [subtasks, setSubtasks] = useState([]);
+  const [employees, setEmployees] = useState([]); // New state for employees
   const [activeView, setActiveView] = useState('overview');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -25,8 +26,6 @@ function Dashboard() {
 
   const animateOverview = useCallback(() => {
     if (activeView !== 'overview') return;
-
-    // Guard against null or empty refs
     if (!cardRefs.current || cardRefs.current.some(ref => !ref)) return;
 
     gsap.fromTo(
@@ -35,7 +34,6 @@ function Dashboard() {
       { opacity: 1, y: 0, duration: 0.8, stagger: 0.2, ease: 'power3.out' }
     );
 
-    // Guard against null or empty progress refs
     if (!progressRefs.current || progressRefs.current.some(ref => !ref)) return;
 
     progressRefs.current.forEach((progress, index) => {
@@ -55,8 +53,6 @@ function Dashboard() {
 
   const animateTasks = useCallback(() => {
     if (activeView !== 'tasks' || tasks.length === 0) return;
-
-    // Guard against null or empty refs
     if (!taskCardRefs.current || taskCardRefs.current.some(ref => !ref)) return;
 
     gsap.fromTo(
@@ -74,29 +70,51 @@ function Dashboard() {
     animateTasks();
   }, [animateTasks]);
 
-  // Auth and data subscription
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (!currentUser) {
         setTasks([]);
         setSubtasks([]);
+        setEmployees([]);
+        setUserData({ firstName: '', lastName: '', role: 'employee' });
+        navigate('/signin');
         return;
       }
 
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists()) setUserData(userDoc.data());
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      } else {
+        console.error('User document not found');
+        return;
+      }
 
-      const tasksQuery = query(collection(db, 'tasks'), where('userId', '==', currentUser.uid));
+      let tasksQuery = userData.role === 'admin'
+        ? query(collection(db, 'tasks'))
+        : query(collection(db, 'tasks'), where('userId', '==', currentUser.uid));
       const subtasksQuery = query(collection(db, 'subtasks'), where('userId', '==', currentUser.uid));
+      
+      // Fetch employees for admins
+      let unsubscribeEmployees;
+      if (userData.role === 'admin') {
+        const employeesQuery = query(collection(db, 'users'), where('role', '==', 'employee'));
+        unsubscribeEmployees = onSnapshot(employeesQuery, (snapshot) => {
+          setEmployees(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+      }
 
-      const unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => setTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
-      const unsubscribeSubtasks = onSnapshot(subtasksQuery, (snapshot) => setSubtasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
+      const unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => {
+        setTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      const unsubscribeSubtasks = onSnapshot(subtasksQuery, (snapshot) => {
+        setSubtasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
 
       const addSampleTasks = async () => {
         const existingTasks = await getDocs(tasksQuery);
-        if (!existingTasks.empty) return;
+        if (!existingTasks.empty || userData.role === 'admin') return;
 
         const sampleTasks = [
           { title: 'Mezzek Website Revamp', dueDate: '2025-03-10', status: 'todo', subtasks: [{ text: 'Design UI', completed: false }, { text: 'Develop Frontend', completed: false }] },
@@ -112,11 +130,12 @@ function Dashboard() {
       return () => {
         unsubscribeTasks();
         unsubscribeSubtasks();
+        if (unsubscribeEmployees) unsubscribeEmployees();
       };
     });
 
     return () => unsubscribeAuth();
-  }, []);
+  }, [userData.role, navigate]);
 
   const addTask = async (taskData) => {
     if (!user) return alert('Please log in to add tasks!');
@@ -251,6 +270,9 @@ function Dashboard() {
           );
         })}
       </div>
+      {userData.role === 'admin' && (
+        <p className="text-white mt-4">Admin View: Showing all tasks across all users.</p>
+      )}
     </div>
   );
 
@@ -291,6 +313,9 @@ function Dashboard() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 mb-4">{task.dueDate}</p>
+                  {userData.role === 'admin' && (
+                    <p className="text-sm text-gray-500 mb-4">Assigned to: {task.userId}</p>
+                  )}
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-xl sm:text-2xl font-bold text-gray-900">{getCompletionPercentage(task.id).toFixed(2)}%</span>
                     <div className="relative inline-block">
@@ -328,13 +353,66 @@ function Dashboard() {
     );
   };
 
+  const renderEmployees = () => (
+    <div style={{
+      position: 'fixed',
+      top: '90px',
+      right: 0,
+      width: '300px',
+      height: '100vh',
+      backgroundColor: '#f9f9f9',
+      padding: '20px',
+      boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
+      overflowY: 'auto',
+    }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', marginBottom: '20px' }}>Employees</h2>
+      {employees.length === 0 ? (
+        <p style={{ color: '#666', fontSize: '14px' }}>No employees found.</p>
+      ) : (
+        employees.map((employee) => (
+          <div key={employee.id} style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#fff',
+            padding: '15px',
+            borderRadius: '10px',
+            marginBottom: '15px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          }}>
+            <div style={{
+              width: '50px',
+              height: '50px',
+              backgroundColor: '#071856',
+              color: '#fff',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              marginRight: '15px',
+            }}>
+              {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
+            </div>
+            <div>
+              <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{`${employee.firstName} ${employee.lastName}`}</p>
+              <p style={{ fontSize: '12px', color: '#666' }}>{employee.email}</p>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      <Sidebar activeView={activeView} setActiveView={setActiveView} />
+      <Sidebar activeView={activeView} setActiveView={setActiveView} userRole={userData.role} />
       <div className="flex-1 md:ml-[250px] box-border">
         <Header firstName={userData.firstName} lastName={userData.lastName} activeView={activeView} onAddTask={handleAddTask} />
-        <main className="p-4 sm:p-6 lg:p-8" style={{ paddingTop: activeView === 'tasks' ? '140px' : '100px' }}>
-          {activeView === 'overview' ? renderOverview() : renderTasks()}
+        <main className="p-4 sm:p-6 lg:p-8" style={{ paddingTop: activeView === 'tasks' || activeView === 'employees' ? '140px' : '100px' }}>
+          {activeView === 'overview' && renderOverview()}
+          {activeView === 'tasks' && renderTasks()}
+          {activeView === 'employees' && userData.role === 'admin' && renderEmployees()}
         </main>
         {isModalOpen && <TaskModal task={editingTask} onSave={addTask} onClose={handleModalClose} />}
       </div>

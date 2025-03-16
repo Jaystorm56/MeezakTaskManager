@@ -4,9 +4,10 @@ import { auth } from '../../firebaseConfig';
 import companyLogo from '../assets/images/company-logo.png';
 import overviewIcon from '../assets/icons/category-2.png'; 
 import tasksIcon from '../assets/icons/book.png'; 
+import employeesIcon from '../assets/icons/book.png'; // Add an icon for employees (you'll need to provide this)
 import exitIcon from '../assets/icons/exit-icon.png';
 
-function Sidebar({ activeView, setActiveView }) {
+function Sidebar({ activeView, setActiveView, userRole }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -96,6 +97,33 @@ function Sidebar({ activeView, setActiveView }) {
             Tasks
           </span>
         </li>
+        {userRole === 'admin' && (
+          <li 
+            style={{ 
+              margin: '10px 0', 
+              display: 'flex', 
+              alignItems: 'center', 
+              cursor: 'pointer',
+              backgroundColor: activeView === 'employees' ? '#f0f0f0' : 'transparent',
+              padding: '10px',
+              borderRadius: '5px',
+            }}
+            onClick={() => setActiveView('employees')}
+          >
+            <img 
+              src={employeesIcon} 
+              alt="Employees Icon" 
+              style={{ width: '20px', height: '20px', marginRight: '10px' }} 
+            />
+            <span style={{ 
+              color: '#333', 
+              textDecoration: 'none',
+              fontSize: activeView === 'employees' ? '18px' : '14px', 
+            }}>
+              Employees
+            </span>
+          </li>
+        )}
       </ul>
 
       {/* Logout Button */}

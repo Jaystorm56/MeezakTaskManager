@@ -48,6 +48,7 @@ function SignUp() {
         email: newUser.email,
         firstName: firstName,
         lastName: lastName,
+        role: 'employee',
         createdAt: new Date().toISOString(),
       });
 
