@@ -3,8 +3,8 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import companyLogo from '../assets/images/company-logo.png';
 import overviewIcon from '../assets/icons/category-2.png'; 
-import tasksIcon from '../assets/icons/book.png'; 
-import employeesIcon from '../assets/icons/book.png'; // Add an icon for employees (you'll need to provide this)
+import tasksIcon from '../assets/icons/task.png'; 
+import employeesIcon from '../assets/icons/employee.png'; // Add an icon for employees (you'll need to provide this)
 import exitIcon from '../assets/icons/exit-icon.png';
 
 function Sidebar({ activeView, setActiveView, userRole }) {
@@ -21,7 +21,7 @@ function Sidebar({ activeView, setActiveView, userRole }) {
 
   return (
     <div style={{
-      width: '250px',
+      width: '252px',
       height: '100vh',
       backgroundColor: '#fff',
       padding: '20px',
@@ -53,7 +53,7 @@ function Sidebar({ activeView, setActiveView, userRole }) {
             display: 'flex', 
             alignItems: 'center', 
             cursor: 'pointer',
-            backgroundColor: activeView === 'overview' ? '#f0f0f0' : 'transparent',
+            backgroundColor: activeView === 'overview' ? 'rgba(7, 24, 86, 0.1)' : 'transparent',
             padding: '10px',
             borderRadius: '5px',
           }}
@@ -65,9 +65,9 @@ function Sidebar({ activeView, setActiveView, userRole }) {
             style={{ width: '20px', height: '20px', marginRight: '10px' }} 
           />
           <span style={{ 
-            color: '#333', 
+           color: 'rgba(7, 24, 86, 0.6)', 
             textDecoration: 'none',
-            fontSize: activeView === 'overview' ? '18px' : '14px', 
+            fontSize: activeView === 'overview' ? '14px' : '12px', 
           }}>
             Overview
           </span>
@@ -78,7 +78,7 @@ function Sidebar({ activeView, setActiveView, userRole }) {
             display: 'flex', 
             alignItems: 'center', 
             cursor: 'pointer',
-            backgroundColor: activeView === 'tasks' ? '#f0f0f0' : 'transparent',
+            backgroundColor: activeView === 'tasks' ? 'rgba(7, 24, 86, 0.1)' : 'transparent',
             padding: '10px',
             borderRadius: '5px',
           }}
@@ -90,9 +90,9 @@ function Sidebar({ activeView, setActiveView, userRole }) {
             style={{ width: '20px', height: '20px', marginRight: '10px' }} 
           />
           <span style={{ 
-            color: '#333', 
+           color: 'rgba(7, 24, 86, 0.6)', 
             textDecoration: 'none',
-            fontSize: activeView === 'tasks' ? '18px' : '14px', 
+            fontSize: activeView === 'tasks' ? '14px' : '12px', 
           }}>
             Tasks
           </span>
@@ -104,7 +104,7 @@ function Sidebar({ activeView, setActiveView, userRole }) {
               display: 'flex', 
               alignItems: 'center', 
               cursor: 'pointer',
-              backgroundColor: activeView === 'employees' ? '#f0f0f0' : 'transparent',
+              backgroundColor: activeView === 'employees' ? 'rgba(7, 24, 86, 0.1)' : 'transparent',
               padding: '10px',
               borderRadius: '5px',
             }}
@@ -116,9 +116,9 @@ function Sidebar({ activeView, setActiveView, userRole }) {
               style={{ width: '20px', height: '20px', marginRight: '10px' }} 
             />
             <span style={{ 
-              color: '#333', 
+              color: 'rgba(7, 24, 86, 0.6)', 
               textDecoration: 'none',
-              fontSize: activeView === 'employees' ? '18px' : '14px', 
+              fontSize: activeView === 'employees' ? '14px' : '12px', 
             }}>
               Employees
             </span>

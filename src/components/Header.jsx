@@ -9,6 +9,20 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
     ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
     : '';
 
+  // Determine the header title based on activeView
+  const getHeaderTitle = () => {
+    switch (activeView) {
+      case 'overview':
+        return 'Dashboard';
+      case 'tasks':
+        return 'Explore Tasks';
+      case 'employees':
+        return 'Employees';
+      default:
+        return 'Dashboard'; // Fallback
+    }
+  };
+
   return (
     <div
       className="bg-white text-gray-900 fixed top-0 left-[250px] w-[calc(100%-250px)] flex flex-col justify-center shadow-md box-border z-10"
@@ -25,21 +39,21 @@ function Header({ firstName, lastName, activeView, onAddTask }) {
             alt="Header GIF"
             className="w-6 h-6"
           />
-          <h1 className="m-0 text-2xl font-bold">
-            {activeView === 'overview' ? 'Dashboard' : 'Explore Tasks'}
+          <h1 className="m-0 text-[20px] font-[600] text-rgba-47-47-59-1">
+            {getHeaderTitle()}
           </h1>
         </div>
         {firstName && (
           <div className="flex items-center">
             <div className="mr-2 text-right">
-              <span className="text-lg font-bold">
+              <span className="text-[18px] font-[600] text-rgba-20-21-34-1">
                 Hi, {firstName}!
               </span>
-              <p className="text-xs mt-[-3px] text-gray-500">
+              <p className="text-[12px] font-[400] mt-[-3px] text-rgba-84-87-122-1 ">
                 Let's finish your tasks today
               </p>
             </div>
-            <div className="w-10 h-10 bg-gray-900 text-white rounded-full flex items-center justify-center text-base font-bold">
+            <div className="w-[52px] h-[52px] bg-[rgba(51,51,51,1)] text-white rounded-full flex items-center justify-center text-[24px] font-[700]">
               {initials}
             </div>
           </div>

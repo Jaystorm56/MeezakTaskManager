@@ -1,0 +1,21 @@
+/* Dashboard.css */
+
+/* Styles for the scrollable employee list */
+.employee-list {
+    max-height: calc(100% - 60px); 
+    overflow-y: auto; 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+  }
+
+  .employee-list::-webkit-scrollbar {
+    display: none;
+  }
+.Siide {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;
+}
+.Siide::-webkit-scrollbar {
+    display: none; 
+}
+    

@@ -8,13 +8,16 @@ import Header from '../components/Header';
 import TaskModal from '../components/TaskModal';
 import { gsap } from 'gsap';
 import { PencilIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import magnifyingGlassIcon from '../assets/icons/search-normal.png'; 
+import './Dashboard.css';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ firstName: '', lastName: '', role: 'employee' });
   const [tasks, setTasks] = useState([]);
   const [subtasks, setSubtasks] = useState([]);
-  const [employees, setEmployees] = useState([]); // New state for employees
+  const [employees, setEmployees] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeView, setActiveView] = useState('overview');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -96,7 +99,6 @@ function Dashboard() {
         : query(collection(db, 'tasks'), where('userId', '==', currentUser.uid));
       const subtasksQuery = query(collection(db, 'subtasks'), where('userId', '==', currentUser.uid));
       
-      // Fetch employees for admins
       let unsubscribeEmployees;
       if (userData.role === 'admin') {
         const employeesQuery = query(collection(db, 'users'), where('role', '==', 'employee'));
@@ -353,56 +355,124 @@ function Dashboard() {
     );
   };
 
-  const renderEmployees = () => (
-    <div style={{
-      position: 'fixed',
-      top: '90px',
-      right: 0,
-      width: '300px',
-      height: '100vh',
-      backgroundColor: '#f9f9f9',
-      padding: '20px',
-      boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
-      overflowY: 'auto',
-    }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', marginBottom: '20px' }}>Employees</h2>
-      {employees.length === 0 ? (
-        <p style={{ color: '#666', fontSize: '14px' }}>No employees found.</p>
-      ) : (
-        employees.map((employee) => (
-          <div key={employee.id} style={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            padding: '15px',
-            borderRadius: '10px',
-            marginBottom: '15px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-          }}>
-            <div style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: '#071856',
-              color: '#fff',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px',
-              fontWeight: 'bold',
-              marginRight: '15px',
-            }}>
-              {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
-            </div>
-            <div>
-              <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{`${employee.firstName} ${employee.lastName}`}</p>
-              <p style={{ fontSize: '12px', color: '#666' }}>{employee.email}</p>
-            </div>
-          </div>
-        ))
-      )}
-    </div>
-  );
+  const renderEmployees = () => {
+    const filteredEmployees = employees.filter(employee => 
+      `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+      <div className='Siide' style={{
+        position: 'fixed',
+        top: '86px',
+        right: 0,
+        width: '338px',
+        height: 'calc(100vh - 86px)', 
+        backgroundColor: '#FFFFFF',
+        padding: '20px',
+        marginRight: '20px',
+        boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
+        overflowY: 'auto', 
+      }}>
+        <div style={{ position: 'relative', marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Search Name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 40px 10px 10px', // Space for icons
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              fontSize: '14px',
+              color: '#333',
+              outline: 'none',
+              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
+            }}
+          />
+          <img
+            src={magnifyingGlassIcon}
+            alt="Search"
+            style={{
+              position: 'absolute',
+              right: '35px', // Positioned to the right of the input
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '16px',
+              height: '16px',
+              pointerEvents: 'none', // Prevents clicking on the icon
+            }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '16px',
+                height: '16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#666',
+                fontSize: '14px',
+                padding: 0,
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <div className='employee-list' style={{ maxHeight: 'calc(100% - 60px)', overflowY: 'auto' }}>
+          {filteredEmployees.length === 0 ? (
+            <p style={{ color: '#666', fontSize: '14px' }}>
+              {searchTerm ? 'No employees match your search.' : 'No employees found.'}
+            </p>
+          ) : (
+            filteredEmployees.map((employee) => (
+              <div key={employee.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '290px',
+                height: '68px',
+                backgroundColor: '#FFFFFF',
+                borderBottom: '1px solid #ddd',
+                padding: '10px 20px',
+                marginBottom: '10px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#333333',
+                  color: '#fff',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  marginRight: '12px',
+                }}>
+                  {employee.firstName.charAt(0).toUpperCase()}{employee.lastName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: '#141522' }}>
+                  {employee.firstName.charAt(0).toUpperCase() + employee.firstName.slice(1).toLowerCase()}{' '}
+                  {employee.lastName.charAt(0).toUpperCase() + employee.lastName.slice(1).toLowerCase()}
+                </p>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#141522' }}>{employee.email}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
