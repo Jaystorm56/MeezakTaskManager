@@ -106,9 +106,8 @@ function Dashboard() {
   useEffect(() => {
     if (!user || !userData.role) return;
 
-    let tasksQuery = userData.role === 'admin'
-      ? query(collection(db, 'tasks'))
-      : query(collection(db, 'tasks'), where('userId', '==', user.uid));
+    // *** CHANGE 1: Fetch only the current user's tasks for both admin and employee ***
+    const tasksQuery = query(collection(db, 'tasks'), where('userId', '==', user.uid));
 
     const unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => {
       const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -300,9 +299,7 @@ function Dashboard() {
           );
         })}
       </div>
-      {userData.role === 'admin' && (
-        <p className="text-white mt-4">Admin View: Showing all tasks across all users.</p>
-      )}
+      {/* *** CHANGE 2: Remove admin-specific message since it now shows only the admin's tasks *** */}
     </div>
   );
 
@@ -343,9 +340,7 @@ function Dashboard() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 mb-4">{task.dueDate}</p>
-                  {userData.role === 'admin' && (
-                    <p className="text-sm text-gray-500 mb-4">Assigned to: {task.userId}</p>
-                  )}
+                  {/* *** CHANGE 3: Remove admin-specific "Assigned to" since it’s now only the admin’s tasks *** */}
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-xl sm:text-2xl font-bold text-gray-900">{getCompletionPercentage(task.id).toFixed(2)}%</span>
                     <div className="relative inline-block">
