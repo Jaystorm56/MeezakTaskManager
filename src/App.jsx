@@ -22,7 +22,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<AdminSignUp/>} />
+        <Route path="/" element={<SignUp/>} />
       </Routes>
     </Router>
   );
