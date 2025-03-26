@@ -12,35 +12,40 @@ import magnifyingGlassIcon from '../assets/icons/search-normal.png';
 import './Dashboard.css';
 
 function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState({ firstName: '', lastName: '', role: 'employee' });
-  const [tasks, setTasks] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeView, setActiveView] = useState('overview');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [selectedEmployeeTasks, setSelectedEmployeeTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  // State management for user authentication, tasks, and UI interactions
+  const [user, setUser] = useState(null); // Current authenticated user
+  const [userData, setUserData] = useState({ firstName: '', lastName: '', role: 'employee' }); // User's profile data
+  const [tasks, setTasks] = useState([]); // Tasks for the current user
+  const [employees, setEmployees] = useState([]); // List of employees (for admins)
+  const [searchTerm, setSearchTerm] = useState(''); // Search term for filtering employees
+  const [activeView, setActiveView] = useState('overview'); // Current view (overview, tasks, employees)
+  const [isModalOpen, setIsModalOpen] = useState(false); // Controls task modal visibility
+  const [editingTask, setEditingTask] = useState(null); // Task being edited in the modal
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Selected employee for admin view
+  const [selectedEmployeeTasks, setSelectedEmployeeTasks] = useState([]); // Tasks of the selected employee
+  const [isLoading, setIsLoading] = useState(true); // Loading state for data fetching
+  const navigate = useNavigate(); // Navigation hook from react-router-dom
 
-  const cardRefs = useRef([]);
-  const progressRefs = useRef([]);
-  const taskCardRefs = useRef([]);
+  // Refs for animation elements
+  const cardRefs = useRef([]); // Refs for overview cards
+  const progressRefs = useRef([]); // Refs for progress circles in overview
+  const taskCardRefs = useRef([]); // Refs for task cards
 
+  // Animation for the overview section using GSAP
   const animateOverview = useCallback(() => {
-    if (activeView !== 'overview') return;
-    if (!cardRefs.current || cardRefs.current.some(ref => !ref)) return;
+    if (activeView !== 'overview') return; // Only animate if in overview view
+    if (!cardRefs.current || cardRefs.current.some(ref => !ref)) return; // Ensure refs are valid
 
+    // Animate overview cards with fade-in and slide-up effect
     gsap.fromTo(
       cardRefs.current,
       { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.8, stagger: 0.2, ease: 'power3.out' }
     );
 
-    if (!progressRefs.current || progressRefs.current.some(ref => !ref)) return;
+    if (!progressRefs.current || progressRefs.current.some(ref => !ref)) return; // Ensure progress refs are valid
 
+    // Animate progress circles based on task status percentages
     progressRefs.current.forEach((progress, index) => {
       const totalTasks = tasks.length;
       const percentages = [
@@ -56,10 +61,12 @@ function Dashboard() {
     });
   }, [activeView, tasks]);
 
+  // Animation for the tasks section using GSAP
   const animateTasks = useCallback(() => {
-    if (activeView !== 'tasks' || tasks.length === 0) return;
-    if (!taskCardRefs.current || taskCardRefs.current.some(ref => !ref)) return;
+    if (activeView !== 'tasks' || tasks.length === 0) return; // Only animate if in tasks view with tasks
+    if (!taskCardRefs.current || taskCardRefs.current.some(ref => !ref)) return; // Ensure refs are valid
 
+    // Animate task cards with fade-in and slide-up effect
     gsap.fromTo(
       taskCardRefs.current,
       { opacity: 0, y: 20 },
@@ -67,6 +74,7 @@ function Dashboard() {
     );
   }, [activeView, tasks]);
 
+  // Trigger animations when dependencies change
   useEffect(() => {
     animateOverview();
   }, [animateOverview]);
@@ -75,11 +83,13 @@ function Dashboard() {
     animateTasks();
   }, [animateTasks]);
 
+  // Handle user authentication state changes
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-      setIsLoading(true);
+      setIsLoading(true); // Start loading
       setUser(currentUser);
       if (!currentUser) {
+        // If no user is logged in, reset state and redirect to sign-in
         setTasks([]);
         setEmployees([]);
         setUserData({ firstName: '', lastName: '', role: 'employee' });
@@ -88,6 +98,7 @@ function Dashboard() {
         return;
       }
 
+      // Fetch user data from Firestore
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
@@ -97,19 +108,18 @@ function Dashboard() {
         setIsLoading(false);
         return;
       }
-      setIsLoading(false);
+      setIsLoading(false); // End loading
     });
 
-    return () => unsubscribeAuth();
+    return () => unsubscribeAuth(); // Cleanup subscription
   }, [navigate]);
 
+  // Fetch tasks and employees based on user role
   useEffect(() => {
-    if (!user || !userData.role) return;
+    if (!user || !userData.role) return; // Wait for user and role to be set
 
-    let tasksQuery = userData.role === 'admin'
-      ? query(collection(db, 'tasks'))
-      : query(collection(db, 'tasks'), where('userId', '==', user.uid));
-
+    // Fetch tasks for the current user (both admin and employee)
+    const tasksQuery = query(collection(db, 'tasks'), where('userId', '==', user.uid));
     const unsubscribeTasks = onSnapshot(tasksQuery, (snapshot) => {
       const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       console.log('Fetched tasks for current user:', fetchedTasks);
@@ -120,16 +130,17 @@ function Dashboard() {
 
     let unsubscribeEmployees;
     if (userData.role === 'admin') {
+      // Fetch all employees for admin users
       const employeesQuery = query(collection(db, 'users'), where('role', '==', 'employee'));
       unsubscribeEmployees = onSnapshot(employeesQuery, (snapshot) => {
         const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         console.log('Fetched employees:', fetchedEmployees);
         setEmployees(fetchedEmployees);
         if (activeView === 'employees' && fetchedEmployees.length > 0 && !selectedEmployeeId) {
-          setSelectedEmployeeId(fetchedEmployees[0].id);
+          setSelectedEmployeeId(fetchedEmployees[0].id); // Default to first employee
         }
 
-        // Add sample tasks for each employee if they don't have any tasks
+        // Add sample tasks for employees with no tasks (for demo purposes)
         const addSampleTasksForEmployees = async () => {
           for (const employee of fetchedEmployees) {
             const employeeTasksQuery = query(collection(db, 'tasks'), where('userId', '==', employee.id));
@@ -153,12 +164,14 @@ function Dashboard() {
       });
     }
 
+    // Cleanup subscriptions
     return () => {
       unsubscribeTasks();
       if (unsubscribeEmployees) unsubscribeEmployees();
     };
   }, [user, userData.role, activeView, selectedEmployeeId]);
 
+  // Fetch tasks for the selected employee (admin view)
   useEffect(() => {
     if (!selectedEmployeeId) {
       setSelectedEmployeeTasks([]);
@@ -178,9 +191,10 @@ function Dashboard() {
       console.error('Error fetching tasks for selected employee:', error);
     });
 
-    return () => unsubscribeTasks();
+    return () => unsubscribeTasks(); // Cleanup subscription
   }, [selectedEmployeeId]);
 
+  // Add or update a task in Firestore
   const addTask = async (taskData) => {
     if (!user) return alert('Please log in to add tasks!');
 
@@ -188,16 +202,18 @@ function Dashboard() {
       const taskWithUser = {
         ...taskData,
         userId: user.uid,
-        dueDate: taskData.dueDate || new Date().toISOString().split('T')[0],
-        status: taskData.status || 'todo',
-        subtasks: taskData.subtasks || [], // Ensure subtasks is always an array
+        dueDate: taskData.dueDate || new Date().toISOString().split('T')[0], // Default to today if no due date
+        status: taskData.status || 'todo', // Default to 'todo' if no status
+        subtasks: taskData.subtasks || [], // Ensure subtasks is an array
       };
 
       console.log('Adding task with data:', taskWithUser);
       if (taskData.id) {
+        // Update existing task
         const taskRef = doc(db, 'tasks', taskData.id);
         await updateDoc(taskRef, taskWithUser);
       } else {
+        // Add new task
         await addDoc(collection(db, 'tasks'), taskWithUser);
       }
     } catch (error) {
@@ -206,13 +222,14 @@ function Dashboard() {
     }
   };
 
+  // Update task status in Firestore
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const taskRef = doc(db, 'tasks', taskId);
       const task = (selectedEmployeeId ? selectedEmployeeTasks : tasks).find(t => t.id === taskId);
       if (!task) return;
 
-      // Check if subtasks exist and if any are incomplete
+      // Prevent moving to 'completed' if subtasks are incomplete
       if (newStatus === 'completed' && (task.subtasks || []).some(s => !s.completed)) {
         console.log('Cannot move to completed: not all subtasks are checked');
         return;
@@ -225,15 +242,14 @@ function Dashboard() {
     }
   };
 
+  // Toggle subtask completion and update task status if needed
   const toggleSubtaskCompletion = async (taskId, subtaskIndex) => {
     try {
       const taskRef = doc(db, 'tasks', taskId);
       const task = (selectedEmployeeId ? selectedEmployeeTasks : tasks).find(t => t.id === taskId);
-      if (!task) return;
+      if (!task || !task.subtasks || !task.subtasks[subtaskIndex]) return;
 
-      // If subtasks don't exist, do nothing
-      if (!task.subtasks || !task.subtasks[subtaskIndex]) return;
-
+      // Update subtask completion status
       const updatedSubtasks = [...task.subtasks];
       updatedSubtasks[subtaskIndex] = {
         ...updatedSubtasks[subtaskIndex],
@@ -242,6 +258,7 @@ function Dashboard() {
 
       await updateDoc(taskRef, { subtasks: updatedSubtasks });
 
+      // Automatically update task status based on subtask completion
       const allSubtasksCompleted = updatedSubtasks.every(s => s.completed);
       const anySubtaskCompleted = updatedSubtasks.some(s => s.completed);
 
@@ -258,6 +275,7 @@ function Dashboard() {
     }
   };
 
+  // Calculate completion percentage for a task based on subtasks
   const getCompletionPercentage = useCallback((taskId) => {
     const task = (selectedEmployeeId ? selectedEmployeeTasks : tasks).find(t => t.id === taskId);
     if (!task || !task.subtasks || task.subtasks.length === 0) return 0;
@@ -265,21 +283,25 @@ function Dashboard() {
     return Math.round((completed / task.subtasks.length) * 100);
   }, [tasks, selectedEmployeeTasks, selectedEmployeeId]);
 
+  // Open the modal for editing a task
   const handleEditTask = (task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
 
+  // Close the modal and reset editing task
   const handleModalClose = () => {
     setIsModalOpen(false);
     setEditingTask(null);
   };
 
+  // Open the modal for adding a new task
   const handleAddTask = () => {
     setEditingTask(null);
     setIsModalOpen(true);
   };
 
+  // Render the overview section with task statistics
   const renderOverview = () => (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -300,12 +322,10 @@ function Dashboard() {
           );
         })}
       </div>
-      {userData.role === 'admin' && (
-        <p className="text-white mt-4">Admin View: Showing all tasks across all users.</p>
-      )}
     </div>
   );
 
+  // Render the tasks section with Kanban-style columns
   const renderTasks = () => {
     if (!tasks.length) {
       return (
@@ -343,9 +363,6 @@ function Dashboard() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 mb-4">{task.dueDate}</p>
-                  {userData.role === 'admin' && (
-                    <p className="text-sm text-gray-500 mb-4">Assigned to: {task.userId}</p>
-                  )}
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-xl sm:text-2xl font-bold text-gray-900">{getCompletionPercentage(task.id).toFixed(2)}%</span>
                     <div className="relative inline-block">
@@ -383,6 +400,7 @@ function Dashboard() {
     );
   };
 
+  // Render the employee list sidebar for admins
   const renderEmployeeList = () => {
     if (isLoading) {
       return (
@@ -406,6 +424,7 @@ function Dashboard() {
       );
     }
 
+    // Filter employees based on search term
     const filteredEmployees = employees.filter(employee => 
       `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -422,7 +441,7 @@ function Dashboard() {
         marginRight: '10px',
         boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
         overflowY: 'auto',
-        zIndex: 10, // Ensure the employee list stays on top
+        zIndex: 10,
       }}>
         <div style={{ position: 'relative', marginBottom: '20px' }}>
           <input
@@ -530,6 +549,7 @@ function Dashboard() {
     );
   };
 
+  // Render details and tasks for the selected employee (admin view)
   const renderSelectedEmployeeDetails = () => {
     if (isLoading) {
       return (
@@ -678,6 +698,7 @@ function Dashboard() {
     );
   };
 
+  // Main render function combining all components
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       <Sidebar activeView={activeView} setActiveView={setActiveView} userRole={userData.role} />
