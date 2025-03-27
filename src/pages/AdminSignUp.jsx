@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
-import { setDoc, doc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 import companyLogo from '../assets/images/company-logo.png';
 import loader from '../assets/icons/loader.svg'
@@ -14,12 +14,13 @@ import showPwd from '../assets/icons/seepwd.png';
 import hidePwd from '../assets/icons/hidepwd.png';
 import activePwdIcon from '../assets/icons/activepwd.png';
 
-function SignUp() {
+function AdminSignUp() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
 
@@ -32,39 +33,27 @@ function SignUp() {
     setSeePassword((prev) => (prev === "password" ? "text" : "password"));
   }
 
-
- 
-  const handleSignup = async (e) => {
-
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const newUser = userCredential.user;
-
-      await setDoc(doc(db, 'users', newUser.uid), {
-        uid: newUser.uid,
-        email: newUser.email,
-        firstName: firstName,
-        lastName: lastName,
-        role: 'employee',
-        createdAt: new Date().toISOString(),
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName,
+        lastName,
+        email: user.email,
+        role: 'admin', // Automatically set as admin
       });
-
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Signup error:', error.message);
-      alert(error.message);
+    } catch (err) {
+      setError(err.message);
     }
     finally {
       setIsSubmitting(false);
     };
-
   };
-
-
-
+ 
   return (
     <div className='relative'>
 
@@ -78,11 +67,20 @@ function SignUp() {
 
         </div>
 
+       
+        {error && (
+          <div className="bg-red-600 text-white text-center p-2 rounded-md">
+            <p>{error}</p>
+          </div>
+        )}
+
+      
+
         <div className='absolute top-[209px] left-[480px] w-[480px] h-[480px]'>
           
-          <h2 className='text-[#333333] w-[245px] h-[30px] text-[24px] font-bold uppercase leading-[100%] tracking-[0] m-auto'>Employee's Sign Up</h2>
+          <h2 className='text-[#333333] w-[245px] h-[30px] text-[24px] font-bold uppercase leading-[100%] tracking-[0] m-auto'>Admin's Sign Up</h2>
 
-          <form onSubmit={handleSignup} className='w-full h-fit'>
+          <form onSubmit={handleSignUp} className='w-full h-fit'>
 
             <div className={` w-full h-[56px] rounded-[10px] border gap-[12px]  px-[20px] flex justify-between items-center my-[14px] ${isFormFilled ? 'border-[#071856] bg-[#0718561A]' : ' border-[#DAE0E6] bg-[#F8F8F8]'} `}>
               <img src={isFormFilled? activePersonIcon : personIcon} alt="face-icon" className="w-[20px] h-[20px] top-[3px] left-[3px]" />
@@ -143,7 +141,7 @@ function SignUp() {
                 {isSubmitting ? (
                   <img src={loader} alt="Loading..." className="block h-[50px] w-[50px] m-auto" />
                   ) : (
-                "Sign Up")}
+                "Sign Up as Admin")}
               </button>
             </div>
 
@@ -158,4 +156,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default AdminSignUp;
