@@ -1,97 +1,209 @@
-import { useState } from 'react';
+import React, { useMemo, memo, useState } from 'react';
 import searchIcon from '../assets/icons/search-normal.png';
 import plusIcon from '../assets/icons/Vector.png';
 import headerGif from '../assets/icons/burning.gif';
 
-function Header({ firstName, lastName, activeView, onAddTask }) {
-  // Get initials from first and last name
-  const initials = firstName && lastName
-    ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
-    : '';
+// Styles as a constant object for maintainability
+const styles = {
+  header: (activeView) => ({
+    backgroundColor: '#fff',
+    color: '#1F1F3B',
+    position: 'fixed',
+    top: 0,
+    left: '250px',
+    width: 'calc(100% - 250px)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxSizing: 'border-box',
+    zIndex: 10,
+    height: activeView === 'tasks' ? '140px' : '90px',
+    padding: '0 20px',
+    transition: 'height 0.2s ease', // Smooth height transition
+  }),
+  topSection: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '80px',
+  },
+  titleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  gif: {
+    width: '24px',
+    height: '24px',
+  },
+  title: {
+    margin: 0,
+    fontSize: '20px',
+    fontWeight: 600,
+    color: 'rgba(47, 47, 59, 1)',
+  },
+  userContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  userText: {
+    marginRight: '8px',
+    textAlign: 'right',
+  },
+  greeting: {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'rgba(20, 21, 34, 1)',
+  },
+  subtext: {
+    fontSize: '12px',
+    fontWeight: 400,
+    marginTop: '-3px',
+    color: 'rgba(84, 87, 122, 1)',
+  },
+  avatar: {
+    width: '52px',
+    height: '52px',
+    backgroundColor: 'rgba(51, 51, 51, 1)',
+    color: '#fff',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
+    fontWeight: 700,
+  },
+  bottomSection: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '40px',
+    marginTop: '4px',
+  },
+  searchContainer: {
+    position: 'relative',
+    flexGrow: 1,
+    maxWidth: '300px',
+  },
+  searchIcon: {
+    position: 'absolute',
+    right: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '20px',
+    height: '20px',
+  },
+  searchInput: {
+    width: '100%',
+    padding: '8px 40px 8px 20px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    fontSize: '14px',
+    outline: 'none',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+  },
+  addButton: {
+    marginLeft: '20px',
+    padding: '8px 16px',
+    backgroundColor: '#1F1F3B',
+    color: '#fff',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+  },
+  plusIcon: {
+    width: '10px',
+    height: '10px',
+  },
+};
 
-  // Determine the header title based on activeView
-  const getHeaderTitle = () => {
-    switch (activeView) {
-      case 'overview':
-        return 'Dashboard';
-      case 'tasks':
-        return 'Explore Tasks';
-      case 'employees':
-        return 'Employees';
-      default:
-        return 'Dashboard'; // Fallback
-    }
-  };
+const Header = ({ firstName, lastName, activeView, onAddTask }) => {
+  // Memoized initials calculation
+  const initials = useMemo(() =>
+    firstName && lastName
+      ? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+      : '',
+    [firstName, lastName]
+  );
+
+  // Memoized header title
+  const headerTitle = useMemo(() => {
+    const titles = {
+      overview: 'Dashboard',
+      tasks: 'Explore Tasks',
+      employees: 'Employees',
+    };
+    return titles[activeView] || 'Dashboard';
+  }, [activeView]);
+
+  // Handle search input focus styles (optional enhancement)
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   return (
-    <div
-      className="bg-white text-gray-900 fixed top-0 left-[250px] w-[calc(100%-250px)] flex flex-col justify-center shadow-md box-border z-10"
-      style={{
-        height: activeView === 'tasks' ? '140px' : '90px',
-        padding: '0 20px',
-      }}
-    >
-      {/* Top Div: Consistent across views */}
-      <div className="flex items-center justify-between h-[80px]">
-        <div className="flex items-center gap-1">
-          <img
-            src={headerGif}
-            alt="Header GIF"
-            className="w-6 h-6"
-          />
-          <h1 className="m-0 text-[20px] font-[600] text-rgba-47-47-59-1">
-            {getHeaderTitle()}
-          </h1>
+    <div style={styles.header(activeView)}>
+      {/* Top Section */}
+      <div style={styles.topSection}>
+        <div style={styles.titleContainer}>
+          <img src={headerGif} alt="Header Animation" style={styles.gif} />
+          <h1 style={styles.title}>{headerTitle}</h1>
         </div>
         {firstName && (
-          <div className="flex items-center">
-            <div className="mr-2 text-right">
-              <span className="text-[18px] font-[600] text-rgba-20-21-34-1">
-                Hi, {firstName}!
-              </span>
-              <p className="text-[12px] font-[400] mt-[-3px] text-rgba-84-87-122-1 ">
-                Let's finish your tasks today
-              </p>
+          <div style={styles.userContainer}>
+            <div style={styles.userText}>
+              <span style={styles.greeting}>Hi, {firstName}!</span>
+              <p style={styles.subtext}>Let's finish your tasks today</p>
             </div>
-            <div className="w-[52px] h-[52px] bg-[rgba(51,51,51,1)] text-white rounded-full flex items-center justify-center text-[24px] font-[700]">
+            <div style={styles.avatar} aria-label={`User initials: ${initials}`}>
               {initials}
             </div>
           </div>
         )}
       </div>
 
-      {/* Bottom Div: Only for Tasks view */}
+      {/* Bottom Section (Tasks View Only) */}
       {activeView === 'tasks' && (
-        <div className="flex items-center justify-between h-[40px] mt-1">
-          {/* Search Box */}
-          <div className="relative flex-grow max-w-xs">
-            <img
-              src={searchIcon}
-              alt="Search"
-              className="absolute right-5 top-1/2 transform -translate-y-1/2 w-5 h-5"
-            />
+        <div style={styles.bottomSection}>
+          <div style={styles.searchContainer}>
+            <img src={searchIcon} alt="Search" style={styles.searchIcon} />
             <input
               type="text"
               placeholder="Search tasks..."
-              className="w-full py-2 pl-5 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={{
+                ...styles.searchInput,
+                borderColor: isSearchFocused ? '#3b82f6' : '#d1d5db',
+                boxShadow: isSearchFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none',
+              }}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              aria-label="Search tasks"
             />
           </div>
-          {/* Add Task Button */}
           <button
             onClick={onAddTask}
-            className="ml-5 px-4 py-2 bg-gray-900 text-white rounded-md flex items-center gap-2 text-sm hover:bg-gray-800"
+            style={styles.addButton}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2d2d4a')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1F1F3B')}
+            aria-label="Add new task"
           >
-            <img
-              src={plusIcon}
-              alt="Add"
-              className="w-2.5 h-2.5"
-            />
+            <img src={plusIcon} alt="Add" style={styles.plusIcon} />
             Add Task
           </button>
         </div>
       )}
     </div>
   );
-}
+};
 
-export default Header;
+// Export as memoized component
+export default memo(Header, (prevProps, nextProps) =>
+  prevProps.firstName === nextProps.firstName &&
+  prevProps.lastName === nextProps.lastName &&
+  prevProps.activeView === nextProps.activeView &&
+  prevProps.onAddTask === nextProps.onAddTask
+);
